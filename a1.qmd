@@ -1,0 +1,204 @@
+---
+title: "Analisis exploratorio multivariado"
+format: pdf
+editor: visual
+---
+
+\tableofcontents
+
+\newpage
+
+\section{Analisis exploratorio multivariante}
+
+# Medidas Multivariantes
+
+## Vector de Medias
+
+```{r}
+data("iris")
+str(iris)
+
+head(iris)
+```
+
+```{r}
+summary(iris)
+```
+
+Ahora se procede a calcular e interpretar el vector de medias para las variables cuantitativas
+
+```{r}
+subconjunto = iris[, 1:4]
+p<-ncol(subconjunto) # variable que contiene el número de variables
+n <- nrow(subconjunto)
+vectormedias1 = colMeans(subconjunto) #Primera opción
+vectormedias1
+```
+
+Estas medidas representan los valores medios de las diferentes características de las
+flores de iris en el conjunto de datos. Son útiles para tener una idea general de cómo
+son las dimensiones promedio de las flores en el dataset. Ahora veamos la diferencia
+entre realizar una lectura de datos y una interpretación de la información.
+
+Interpretación:Podemos observar que las dimensiones promedio de los sépalos y
+pétalos varían entre las especies de iris. Por ejemplo, si comparamos la longitud
+promedio de los pétalos, vemos que es más alta que la de los sépalos. Esto podría
+indicar diferencias morfológicas entre las especies de iris. También podemos notar
+que la longitud promedio de los pétalos es más grande que la de los sépalos, mientras
+que el ancho promedio de los sépalos es más grande que el de los pétalos. Esto podría
+indicar diferencias en la forma y proporciones de los diferentes órganos de la flor.Las
+diferencias en las dimensiones promedio de los sépalos y pétalos entre las especies de
+iris podrían indicar diferencias en la forma y tamaño de las flores entre las especies.
+Estas diferencias podrían ser útiles para la clasificación y discriminación de las
+especies de iris. El vector de medias proporciona información útil sobre las
+dimensiones promedio de los sépalos y pétalos en el dataset iris, lo que nos permite
+realizar inferencias sobre las características morfológicas de las diferentes especies de
+iris incluidas en el conjunto de datos.
+
+## Matriz de Varianzas y Covarianzas "S"
+
+Para su calculo se utiliza la función cov() que calcula la matriz S corregida. Siempre
+usaremos el subconjunto de variables númericas.La matriz de varianzas y covarianzas
+del dataset iris proporciona información sobre cómo las diferentes características
+(longitud y ancho de los sépalos y pétalos) están relacionadas entre sí. Cada elemento
+de la matriz representa la covarianza entre dos características específicas. La diagonal
+principal de la matriz contiene las varianzas de cada característica, mientras que los
+elementos fuera de la diagonal principal contienen las covarianzas entre pares de
+características.
+
+```{r}
+S= cov(subconjunto)
+S
+```
+
+# Medidas Glovales de Variabilidad
+
+Estas medidas de varianza nos permiten entender la variabilidad en las características
+de las flores del dataset iris desde diferentes perspectivas. Proporcionan información
+valiosa sobre la dispersión de los datos y pueden ayudar a contextualizar los
+resultados obtenidos en el análisis posterior.
+
+```{r}
+##Varianza total de los datos de la base de datos llamada iris
+VT<-sum(diag(S))
+VT
+```
+
+```{r}
+##Varianza media de los datos de la base llamada iris
+VM<-VT/p
+VM
+```
+
+```{r}
+##varianza generalizada
+VG<-det(S)
+VG
+```
+
+```{r}
+## Desviación Generalizada
+DG<-(VG)^(1/2)
+DG
+```
+
+```{r}
+##Varianza efectiva :
+VE<-(VG)^(1/p)
+VE
+```
+
+```{r}
+##Desviación promedio:
+DP <- (VG)^(1/(2*p))
+DP
+```
+
+La varianza total representa la variabilidad total en el conjunto de datos. En el caso del
+dataset iris, esta medida nos indica cuánto varían las características de las flores en
+general. Una varianza total más alta sugiere una mayor variabilidad en las
+características de las flores entre las diferentes observaciones. La varianza media
+representa la variabilidad promedio en las características del dataset. En este caso,
+una varianza media de aproximadamente 1.143239 indica que, en promedio, las
+características de las flores en el dataset iris varían en torno a este valor.
+
+## Variabilidad con Distancias
+
+```{r}
+#Distancia de Mahalanobis
+x<-as.matrix(subconjunto)
+media<-colMeans(subconjunto)
+matriz.media<-matrix(media,nrow = n,ncol=p,byrow = TRUE)
+SI<-solve(S)
+distm<-((x-matriz.media)%*%SI)%*%t((x-matriz.media))
+#distm
+
+```
+
+## Matriz de Correlaciones
+
+La matriz de correlaciones R es una matriz cuadrada y simétrica, y además
+semidefinida positiva, que tiene unos en la diagonal principal y fuera de ella los
+coeficientes de correlación lineal entre pares de variables.Para su calculo utilizaremos
+la función “cor()”.
+
+```{r}
+R = round(cor(subconjunto),2) #Se utiliza la función round para redondear a 2 decimales cada entrada de la matriz
+R
+```
+
+## Medidas Globales de  Dependencia Lineal
+
+```{r}
+#Coeficiente de dependencia
+CD= det(R)
+CD
+
+#Dependencia Global
+DRp = 1- (CD)^ 1/(p-1)
+DRp
+
+#Coeficiente de correlación promedio
+CCP = sqrt(DRp)
+CCP
+```
+
+## Análisis Gráfico.
+
+En este apartado la interpretación se deja al estudiante y se mostrará el código para la
+creación de los diferentes gráficos multivariantes.
+
+### Matrices de dispersión.
+
+```{r}
+pairs(iris[,1:4],pch=as.numeric(iris$Species),col=iris$Species)
+```
+
+```{r}
+#install.packages("corrplot")
+library(corrplot)
+```
+
+```{r}
+correlacion<-round(cor(subconjunto), 1)
+corrplot(correlacion, method="number", type="upper")
+```
+
+Gráficos de dispersión para calcular los coeficientes de una sola vez y ver si son estadísticamente significativos.
+
+```{r}
+library(PerformanceAnalytics)
+
+chart.Correlation(subconjunto, histogram = F, pch = 19)
+```
+
+## Distancias de Mahalanobis
+
+```{r}
+Vmedias <- colMeans(subconjunto)
+numDatos <- nrow(subconjunto)
+MatrVarCov <- cov(subconjunto)*(numDatos-1)/numDatos
+dismahalanobis <- mahalanobis(subconjunto, Vmedias, MatrVarCov)
+barplot(dismahalanobis, main = "Distancias de Mahalanobis", col =
+"purple")
+```
